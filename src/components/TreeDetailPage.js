@@ -126,7 +126,7 @@ const TreeDetailPage = ({ tree }) => {
         </div>
         <h1 className="text-3xl font-bold mb-4">{tree.name}</h1>
         <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
-          <img src="/icon.png" alt="Icon" className="w-16 h-16 rounded-full" />
+          <img src="/chara.png" alt="Icon" className="w-16 h-16 rounded-full" />
         </div>
         <button
           onClick={handlePush}

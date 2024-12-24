@@ -51,7 +51,7 @@ const DashboardPage = () => {
       {/* 左上の画面アイコン */}
       <div className="absolute top-4 left-4">
         <img
-          src="/screen-icon.png"
+          src="/holox_AI.png"
           alt="Screen Icon"
           className="w-12 h-12 border border-gray-300 rounded"
         />
@@ -83,7 +83,7 @@ const DashboardPage = () => {
             {/* 丸形のアイコン画像 */}
             <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
               <img
-                src="/icon.png"
+                src="/chara.png"
                 alt="Tree Icon"
                 className="w-12 h-12 rounded-full"
               />
