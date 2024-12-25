@@ -1,45 +1,80 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import Confetti from "react-confetti";
 
-const TreeDetailPage = ({ tree }) => {
+const TreeDetailPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const tree = location.state?.tree;
   const [pushCount, setPushCount] = useState(0);
-  const [currentImage, setCurrentImage] = useState(tree.image);
-  const [decorations, setDecorations] = useState([]); // 装飾画像を管理
+  const [currentImage, setCurrentImage] = useState(tree?.image || '');
+  const [decorations, setDecorations] = useState([]);
+  const [uiElements, setUiElements] = useState([]);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiDimensions, setConfettiDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
 
-  // 木の画像リスト
+  // Redirect if no tree data
+  useEffect(() => {
+    if (!tree) {
+      navigate('/', { replace: true });
+    }
+  }, [tree, navigate]);
+
+  // Handle window resize for confetti
+  useEffect(() => {
+    const handleResize = () => {
+      setConfettiDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const treeImages = [
-    "/tree1.png", // 初期画像
-    "/change1.png", // 5回目
-    "/change2.png", // 10回目
+    "/first_tree1.png",
+    "/change_tree1.png",
+    "/change_tree2.png",
   ];
 
-  // 背景装飾リスト
   const decorationImages = [
-    "/decoration1.png", // 15回目
-    "/decoration2.png", // 20回目
-    "/decoration3.png", // 25回目
-    "/decoration4.png", // 30回目
+    "/decoration1.png",
+    "/decoration2.png",
+    "/decoration3.png",
+    "/decoration4.png",
+    "/decoration5.png",
+    "/decoration6.png",
+    "/decoration7.png",
+    "/decoration8.png",
+    "/decoration9.png",
+    "/decoration10.png",
+    "/decoration11.png",
+    "/decoration12.png",
+    "/decoration13.png",
+    "/decoration14.png",
   ];
 
-  // UI要素の位置（ボタンや木の画像）
-  const uiElements = [
-    { top: 10, left: 10, width: 64, height: 64 }, // 例: 木の画像
-    { top: 20, left: 300, width: 200, height: 50 }, // 例: PUSHボタン
-    { top: 50, left: 100, width: 50, height: 50 }, // 例: アイコン画像
-  ];
+  useEffect(() => {
+    const elements = [
+      { top: 4, left: 4, width: 120, height: 40 },
+      { top: window.innerHeight / 2 - 64, left: window.innerWidth / 2 - 32, width: 64, height: 64 },
+      { top: window.innerHeight / 2 + 100, left: window.innerWidth / 2 - 100, width: 200, height: 50 },
+      { top: 20, left: 20, width: 250, height: 50 },
+    ];
+    setUiElements(elements);
+  }, []);
 
-  // 装飾画像の位置をランダムに決定
   const getRandomPosition = (imageWidth, imageHeight) => {
     const minX = 0;
     const minY = 0;
-    const maxX = window.innerWidth - imageWidth; // 画面幅から画像幅を引く
-    const maxY = window.innerHeight - imageHeight; // 画面高さから画像高さを引く
-
+    const maxX = window.innerWidth - imageWidth;
+    const maxY = window.innerHeight - imageHeight;
     let randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
     let randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
-
-    // UI要素と重ならないように調整
     for (let i = 0; i < uiElements.length; i++) {
       const element = uiElements[i];
       if (
@@ -48,48 +83,76 @@ const TreeDetailPage = ({ tree }) => {
         randomY < element.top + element.height &&
         randomY + imageHeight > element.top
       ) {
-        // 重なっていたら再度ランダムな位置を計算
         return getRandomPosition(imageWidth, imageHeight);
       }
     }
-
     return { x: randomX, y: randomY };
   };
 
   const handlePush = () => {
+    // Audio setup
+    let PushAudio = new Audio('/button.mp3');
+    let PushAudioDiv = new Audio('/tada-fan.mp3');
+    let PushAudioCat = new Audio('/cat-meow.mp3');
+    let PushAudioBells = new Audio('/christmas-bells.mp3');
     const newCount = pushCount + 1;
     setPushCount(newCount);
 
-    // 画像切り替え（木の画像）
+    // Play appropriate sound and show confetti based on push count
+    if (newCount === 15) {
+      PushAudioCat.play();
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+    } else if (newCount === 20) {
+      PushAudioBells.play();
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+    } else if (newCount % 5 === 0) {
+      PushAudioDiv.play();
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
+    } else {
+      PushAudio.play();
+    }
+
+    // Update tree image
     if (newCount <= 10 && newCount % 5 === 0) {
-      const nextImageIndex = newCount / 5; // 次の画像インデックス
+      const nextImageIndex = newCount / 5;
       if (treeImages[nextImageIndex]) {
         setCurrentImage(treeImages[nextImageIndex]);
       }
     }
 
-    // 装飾追加（背景装飾画像）
+    // Add decorations
     if (newCount >= 15 && newCount % 5 === 0) {
-      const decorationIndex = Math.floor((newCount - 15) / 5); // 15回目から開始
-      if (decorationImages[decorationIndex]) {
-        const imageWidth = 100;  // 小さな画像サイズ（幅）
-        const imageHeight = 100; // 小さな画像サイズ（高さ）
-        const { x, y } = getRandomPosition(imageWidth, imageHeight);
-
-        setDecorations([
-          ...decorations,
-          { src: decorationImages[decorationIndex], x, y, width: imageWidth, height: imageHeight },
-        ]);
-      }
+      const decorationIndex = Math.floor(Math.random() * decorationImages.length);
+      const imageWidth = 100;
+      const imageHeight = 100;
+      const { x, y } = getRandomPosition(imageWidth, imageHeight);
+      setDecorations([
+        ...decorations,
+        { src: decorationImages[decorationIndex], x, y, width: imageWidth, height: imageHeight },
+      ]);
     }
   };
+
+  if (!tree) {
+    return null;
+  }
 
   return (
     <div
       className="relative min-h-screen bg-cover bg-center"
       style={{ backgroundImage: "url('/house.jpg')" }}
     >
-      {/* 背景装飾 */}
+      {showConfetti && (
+        <Confetti
+          numberOfPieces={300}
+          width={confettiDimensions.width}
+          height={confettiDimensions.height}
+          colors={["#FF0000", "#00FF00", "#0000FF"]}
+        />
+      )}
       {decorations.map((decoration, index) => (
         <img
           key={index}
@@ -101,38 +164,34 @@ const TreeDetailPage = ({ tree }) => {
             left: decoration.x,
             width: decoration.width,
             height: decoration.height,
-            zIndex: 1, // 背景より手前に表示
-            mixBlendMode: "nomal", // 背景の装飾が重なるように設定
+            zIndex: 1,
           }}
         />
       ))}
-
-      {/* その他の要素 */}
       <div className="absolute top-4 left-4">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          onClick={() => navigate("/")} // ホームに戻る
+          onClick={() => navigate(-1)}
         >
           ホームに戻る
         </button>
       </div>
-
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="relative">
-          <img src={currentImage} alt={tree.name} className="w-64 h-64 mb-4" />
-          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white px-4 py-2 rounded-full text-black">
-            {pushCount} 回推されました
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 bg-white px-4 py-0.1 rounded-full text-black">
+            {pushCount} 回
           </div>
+          <img src={currentImage} alt={tree.name} className="w-64 h-64 mb-4" />
         </div>
-        <h1 className="text-3xl font-bold mb-4">{tree.name}</h1>
-        <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
-          <img src="/chara.png" alt="Icon" className="w-16 h-16 rounded-full" />
+        <div className="flex items-center mb-4">
+          <img src="/chara.png" alt="Icon" className="w-16 h-16 mr-4" />
+          <h1 className="text-3xl font-bold">紅葉なつき</h1> {/* 木の名前を固定 */}
         </div>
         <button
           onClick={handlePush}
           className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-700"
         >
-          PUSH
+          推す
         </button>
       </div>
     </div>
